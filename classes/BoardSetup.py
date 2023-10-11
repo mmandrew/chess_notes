@@ -12,6 +12,7 @@ import SetBoardFrame
 class board_set(tk.Toplevel):
     def __init__(self, window):
         super().__init__(window)
+        self.window = window
         self.title("Set custom position")
         self.geometry("1500x900")
         self.grab_set()
@@ -28,6 +29,7 @@ class board_set(tk.Toplevel):
         self.flip_board_buttom = Button(self.basic_frame, text = "Flip board", width = 50)
         self.flip_board_buttom.pack(side = TOP, pady = 100)
         self.apply_button = Button(self.basic_frame, text = "APPLY", width = 50)
+        self.apply_button.bind('<Button-1>', self.apply)
         self.apply_button.pack()
 
         #self.board_and_pieces_frame = Frame(self, width = 700, height = 900, bg = "white")
@@ -70,9 +72,9 @@ class board_set(tk.Toplevel):
         self.move_label = Label(self.position_details_frame, text = "Move")
         self.move_label.grid(row = 4, column = 0)
 
-        self.white_move_button = Radiobutton(self.position_details_frame, text = "White", value = "White", variable = self.move_order)
+        self.white_move_button = Radiobutton(self.position_details_frame, text = "White", value = "w", variable = self.move_order)
         self.white_move_button.grid(row = 5, column = 0)
-        self.black_move_buttom = Radiobutton(self.position_details_frame, text = "Black", value = "Black", variable = self.move_order)
+        self.black_move_buttom = Radiobutton(self.position_details_frame, text = "Black", value = "b", variable = self.move_order)
         self.black_move_buttom.grid(row = 6, column = 0)
 
     def clear_board(self, event):
@@ -93,6 +95,32 @@ class board_set(tk.Toplevel):
         pass
 
     def apply(self, event):
+        self.window.board = self.board_and_pieces_frame.board
+
+        if self.white_king_castle_check_state:
+            self.window.board.castles.set_white_kingside_castle_possible()
+        else:
+            self.window.board.castles.set_white_kingside_castle_impossible()
+
+        if self.black_king_castle_check_state:
+            self.window.board.castles.set_black_kingside_castle_possible()
+        else:
+            self.window.board.castles.set_black_kingside_castle_impossible()
+
+        if self.white_queen_castle_check_state:
+            self.window.board.castles.set_white_queenside_castle_possible()
+        else:
+            self.window.board.castles.set_white_queenside_castle_impossible()
+
+        if self.black_queen_castle_check_state:
+            self.window.board.castles.set_black_queenside_castle_possible()
+        else:
+            self.window.board.castles.set_black_queenside_castle_impossible()
+
+        self.window.board.move_order = self.move_order
+
+        self.window.board.print_position_as_text_from_white()
+        self.destroy()
         pass
 
     def set_current_piece(self, event):
