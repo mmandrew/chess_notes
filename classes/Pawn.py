@@ -10,29 +10,33 @@ class Pawn:
         if Pawn.check_move_legal(start_square, end_square, board):
             if abs(start_square.rank - end_square.rank) == 2:
                 board.unset_ep_square()
-                board.set_ep_square((start_square.rank + end_square.rank)//2, start_square.line)
+                new_ep_square_rank = (start_square.rank + end_square.rank)//2
+                board.set_ep_square(new_ep_square_rank, start_square.line)
                 end_square.piece = copy.deepcopy(start_square.piece)
                 start_square.clear()
-                return
+                return ''
 
             if (abs(start_square.rank - end_square.rank)) == 1 and ((start_square.line == end_square.line)):
                 board.unset_ep_square()
                 end_square.piece = copy.deepcopy(start_square.piece)
                 start_square.clear()
-                return
+                return ''
 
             if (abs(start_square.rank - end_square.rank)) == 1 and ((start_square.line != end_square.line)) and (end_square.piece_stands()):
                 board.unset_ep_square()
                 end_square.piece = copy.deepcopy(start_square.piece)
                 start_square.clear()
-                return
+                return ''
 
             if (abs(start_square.rank - end_square.rank)) == 1 and ((start_square.line != end_square.line)) and (not end_square.piece_stands()):
                 board.unset_ep_square()
                 end_square.piece = copy.deepcopy(start_square.piece)
                 start_square.clear()
                 board.board[start_square.rank - 1][ord(end_square.line) - ord('a')].clear()
-                return
+                if end_square.piece.color == 'w':
+                    return str(end_square.rank - 2) + str(ord(end_square.line) - ord('a'))
+                else:
+                    return str(end_square.rank) + str(ord(end_square.line) - ord('a'))
 
             #CONSIDER PAWN PROMOTION AT SOME POINT
 

@@ -18,16 +18,17 @@ class Move:
         board.flip_move_order()
 
     def check_king_wont_be_in_check(start_square: Square, end_square: Square, board: Board) -> bool:
-        board_after = copy.deepcopy(board)
+        board_after = board.copy_self()
         start_square_after = board_after.board[start_square.rank - 1][ord(start_square.line) - ord('a')]
         end_square_after = board_after.board[end_square.rank - 1][ord(end_square.line) - ord('a')]
         Move.simple_move(start_square_after, end_square_after, board_after)
         return (not board_after.king_in_check())
 
-    def do_move(start_square: Square, end_square: Square, board: Board):
+    def do_move(start_square: Square, end_square: Square, board: Board) -> Board:
+        comment = ''
         if Move.check_move_legal(start_square, end_square, board):
             if start_square.piece.name == 'pawn':
-                Pawn.do_move(start_square, end_square, board)
+                comment = Pawn.do_move(start_square, end_square, board)
             if start_square.piece.name == 'knight':
                 Knight.do_move(start_square, end_square, board)
             if start_square.piece.name == 'bishop':
@@ -37,10 +38,16 @@ class Move:
             if start_square.piece.name == 'queen':
                 Queen.do_move(start_square, end_square, board)
             if start_square.piece.name == 'king':
-                King.do_move(start_square, end_square, board)
+                comment = King.do_move(start_square, end_square, board)
             board.flip_move_order()
 
+        return board, comment
+
+
     def check_move_legal(start_square: Square, end_square: Square, board: Board):
+        if start_square == end_square:
+            return False
+
         if not start_square.piece_stands():
             return False
 

@@ -28,7 +28,6 @@ class set_board_frame(tk.Frame):
         self.last_cursor_x = -1
         self.last_cursor_y = -1
 
-
         self.test_id = 0
         self.test_img = None
 

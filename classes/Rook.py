@@ -11,19 +11,20 @@ class Rook:
     def do_move(start_square: Square, end_square: Square, board: Board) -> None:
         if Rook.check_move_legal(start_square, end_square, board):
             board.unset_ep_square()
-            end_square.piece = copy.deepcopy(start_square.piece)
-            start_square.clear()
-            if start_square.short_description() == "a1":
+            if (start_square.short_description()[-2:]) == "a1" or (end_square.short_description()[-2:]) == "a1":
                 board.castles.set_white_queenside_castle_impossible()
 
-            if start_square.short_description() == "a8":
+            if (start_square.short_description()[-2:]) == "a8" or (end_square.short_description()[-2:]) == "a8":
                 board.castles.set_black_queenside_castle_impossible()
 
-            if start_square.short_description() == "h1":
+            if (start_square.short_description()[-2:]) == "h1" or (end_square.short_description()[-2:]) == "h1":
                 board.castles.set_white_kingside_castle_impossible()
 
-            if start_square.short_description() == "h8":
+            if (start_square.short_description()[-2:]) == "h8" or (end_square.short_description()[-2:]) == "h8":
                 board.castles.set_black_kingside_castle_impossible()
+            end_square.piece = copy.deepcopy(start_square.piece)
+            start_square.clear()
+
 
     def check_move_legal(start_square: Square, end_square: Square, board: Board):
         if not start_square.piece_stands():
@@ -57,6 +58,9 @@ class Rook:
         return True
 
     def is_attacking(start_square: Square, end_square: Square, board: Board):
+        if start_square == end_square:
+            return False
+
         if (start_square.line != end_square.line) and (start_square.rank != end_square.rank):
             return False
 

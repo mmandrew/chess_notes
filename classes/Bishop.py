@@ -1,6 +1,7 @@
 import Piece
 import Board
 from Square import Square
+import copy
 
 #class Bishop(Piece):
 class Bishop:
@@ -39,10 +40,10 @@ class Bishop:
 
         return True
 
-    def do_move(start_square: Square, end_square: Square, board: Board):
-        pass
-
     def is_attacking(start_square: Square, end_square: Square, board: Board):
+
+        if start_square == end_square:
+            return False
 
         if abs(start_square.rank - end_square.rank) != abs(ord(start_square.line) - ord(end_square.line)):
             return False

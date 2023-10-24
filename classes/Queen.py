@@ -19,6 +19,9 @@ class Queen:
             Rook.check_move_legal(start_square, end_square, board))
 
     def is_attacking(start_square: Square, end_square: Square, board: Board):
+        if start_square == end_square:
+            return False
+
         return(Bishop.is_attacking(start_square, end_square, board) or Rook.is_attacking(start_square, end_square, board))
 
 

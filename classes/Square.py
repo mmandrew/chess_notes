@@ -27,6 +27,16 @@ class Square:
         self.canvas_id = 0
         self.piece_img = None
 
+    def copy_self(self):
+        new_s = Square(self.line, self.rank)
+        #new_s.color = self.color
+        new_s.piece = self.piece.copy_self()
+        new_s.is_ep = self.is_ep
+        new_s.canvas_id = 0
+        new_s.piece_img = None
+
+        return new_s
+
     def piece_stands(self):
         return not self.piece.name == ''
 

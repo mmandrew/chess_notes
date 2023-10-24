@@ -22,6 +22,19 @@ class Board:
         self.move_order = 'w'
         self.ep_square = ''
 
+    def copy_self(self):
+        new_b = Board()
+
+        for rank in range(8):
+            for line in range(8):
+                new_b.board[rank][line] = self.board[rank][line].copy_self()
+
+        new_b.castles = copy.deepcopy(self.castles)
+        new_b.move_order = self.move_order
+        new_b.ep_square = self.ep_square
+
+        return new_b
+
     def set_move_order(self, side: chr) -> None:
         if side in ['w', 'b']:
             self.move_order = side

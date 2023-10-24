@@ -11,6 +11,11 @@ class Piece:
             raise NameError("{} is WRONG color!".format(color))
         self.color = color
 
+    def copy_self(self):
+        new_p = Piece(self.name, self.color)
+
+        return new_p
+
     def move(self):
         pass
 

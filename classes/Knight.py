@@ -1,6 +1,7 @@
 import Piece
 import Board
 from Square import Square
+import copy
 
 class Knight:
     def __init__(self):

@@ -74,6 +74,7 @@ class board_set(tk.Toplevel):
 
         self.white_move_button = Radiobutton(self.position_details_frame, text = "White", value = "w", variable = self.move_order)
         self.white_move_button.grid(row = 5, column = 0)
+        self.white_move_button.select()
         self.black_move_buttom = Radiobutton(self.position_details_frame, text = "Black", value = "b", variable = self.move_order)
         self.black_move_buttom.grid(row = 6, column = 0)
 
@@ -95,6 +96,7 @@ class board_set(tk.Toplevel):
         pass
 
     def apply(self, event):
+        self.window.full_board_clear()
         self.window.board = self.board_and_pieces_frame.board
 
         if self.white_king_castle_check_state:
@@ -117,9 +119,10 @@ class board_set(tk.Toplevel):
         else:
             self.window.board.castles.set_black_queenside_castle_impossible()
 
-        self.window.board.move_order = self.move_order
+        self.window.board.ep_square = self.ep_text.get("1.0", END) or ''
+        self.window.board.move_order = self.move_order.get()
 
-        self.window.board.print_position_as_text_from_white()
+        #self.window.board.print_position_as_text_from_white()
         self.destroy()
         pass
 

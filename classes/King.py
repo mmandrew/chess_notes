@@ -20,35 +20,35 @@ class King:
             if (abs(start_square.rank - end_square.rank) <= 1) and (abs(ord(start_square.line) - ord(end_square.line)) <= 1):
                 end_square.piece = copy.deepcopy(start_square.piece)
                 start_square.clear()
-                return
+                return ''
 
             if (start_square.short_description() == "Ke1") and (end_square.short_description() == "g1"):
                 end_square.piece = copy.deepcopy(start_square.piece)
                 start_square.clear()
-                board.board[0][5].piece = copy.deepcopy(board.board[0][7]).piece
+                board.board[0][5].piece = board.board[0][7].piece.copy_self()
                 board.board[0][7].clear()
-                return
+                return '0705'
 
             if (start_square.short_description() == "Ke1") and (end_square.short_description() == "c1"):
                 end_square.piece = copy.deepcopy(start_square.piece)
                 start_square.clear()
-                board.board[0][3].piece = copy.deepcopy(board.board[0][0]).piece
-                board.board[0][1].clear()
-                return
+                board.board[0][3].piece = board.board[0][0].piece.copy_self()
+                board.board[0][0].clear()
+                return '0003'
 
-            if (start_square.short_description() == "Ke8") and (end_square.short_description() == "g8"):
+            if (start_square.short_description() == "ke8") and (end_square.short_description() == "g8"):
                 end_square.piece = copy.deepcopy(start_square.piece)
                 start_square.clear()
-                board.board[7][5].piece = copy.deepcopy(board.board[7][7]).piece
+                board.board[7][5].piece = board.board[7][7].piece.copy_self()
                 board.board[7][7].clear()
-                return
+                return '7775'
 
-            if (start_square.short_description() == "Ke8") and (end_square.short_description() == "c8"):
+            if (start_square.short_description() == "ke8") and (end_square.short_description() == "c8"):
                 end_square.piece = copy.deepcopy(start_square.piece)
                 start_square.clear()
-                board.board[7][3].piece = copy.deepcopy(board.board[7][0]).piece
-                board.board[7][1].clear()
-                return
+                board.board[7][3].piece = board.board[7][0].piece.copy_self()
+                board.board[7][0].clear()
+                return '7073'
 
     def check_move_legal(start_square: Square, end_square: Square, board: Board):
         if board.move_order != start_square.piece.color:
@@ -70,7 +70,7 @@ class King:
 
         if (start_square.short_description() == "Ke1") and \
             (end_square.short_description() == "c1") and \
-            (board.castles.white_kingside_castle_possible) and \
+            (board.castles.white_queenside_castle_possible) and \
             (not board.square_attacked_by_black(board.board[0][2])) and \
             (not board.square_attacked_by_black(board.board[0][3])) and \
             (not board.square_attacked_by_black(board.board[0][4])) and \
@@ -81,7 +81,7 @@ class King:
 
         if (start_square.short_description() == "ke8") and \
             (end_square.short_description() == "g8") and \
-            (board.castles.white_kingside_castle_possible) and \
+            (board.castles.black_kingside_castle_possible) and \
             (not board.square_attacked_by_white(board.board[7][6])) and \
             (not board.square_attacked_by_white(board.board[7][5])) and \
             (not board.square_attacked_by_white(board.board[7][4])) and \
@@ -91,7 +91,7 @@ class King:
 
         if (start_square.short_description() == "ke8") and \
             (end_square.short_description() == "c8") and \
-            (board.castles.white_kingside_castle_possible) and \
+            (board.castles.black_queenside_castle_possible) and \
             (not board.square_attacked_by_white(board.board[7][2])) and \
             (not board.square_attacked_by_white(board.board[7][3])) and \
             (not board.square_attacked_by_white(board.board[7][4])) and \
@@ -103,6 +103,9 @@ class King:
         return False
 
     def is_attacking(start_square: Square, end_square: Square, board: Board):
+        if start_square == end_square:
+            return False
+
         return (abs(start_square.rank - end_square.rank) <= 1) and (abs(ord(start_square.line) - ord(end_square.line)) <= 1)
 
 
