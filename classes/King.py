@@ -54,6 +54,9 @@ class King:
         if board.move_order != start_square.piece.color:
             return False
 
+        if (end_square.piece_stands()) and (start_square.piece.color == end_square.piece.color):
+            return False
+
         if (abs(start_square.rank - end_square.rank) <= 1) and (abs(ord(start_square.line) - ord(end_square.line)) <= 1):
             return ((start_square.piece.color == "w") and (not board.square_attacked_by_black(end_square))) or \
                 ((start_square.piece.color == "b") and (not board.square_attacked_by_white(end_square)))

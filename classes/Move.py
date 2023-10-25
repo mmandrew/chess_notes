@@ -26,6 +26,7 @@ class Move:
 
     def do_move(start_square: Square, end_square: Square, board: Board) -> Board:
         comment = ''
+        move_note = ''
         if Move.check_move_legal(start_square, end_square, board):
             if start_square.piece.name == 'pawn':
                 comment = Pawn.do_move(start_square, end_square, board)
@@ -34,7 +35,7 @@ class Move:
             if start_square.piece.name == 'bishop':
                 Bishop.do_move(start_square, end_square, board)
             if start_square.piece.name == 'rook':
-                Rook.do_move(start_square, end_square, board)
+                move = Rook.do_move(start_square, end_square, board)
             if start_square.piece.name == 'queen':
                 Queen.do_move(start_square, end_square, board)
             if start_square.piece.name == 'king':

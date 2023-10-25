@@ -137,6 +137,32 @@ class Board:
         return ((self.move_order == 'w') and self.black_king_in_check()) or \
                 ((self.move_order == 'b') and self.white_king_in_check())
 
+    #def get_white_king_square(self):
+    #    for rank in self.board:
+    #        for square in rank:
+    #            if (square.piece) and (square.piece.name == "king") and (square.piece.color == 'w'):
+    #                return square
+
+    #def get_black_king_square(self):
+    #    for rank in self.board:
+    #        for square in rank:
+    #            if (square.piece) and (square.piece.name == "king") and (square.piece.color == 'b'):
+    #                return square
+
+    def king_in_mate(self) -> bool:
+        for start_rank in self.board:
+            for start_square in start_rank:
+                if (start_square.piece_stands()) and (start_square.piece.color == self.move_order):
+                    for end_rank in self.board:
+                        for end_square in end_rank:
+                            if Move.check_move_legal(start_square, end_square, self):
+                                start_square.print_square()
+                                end_square.print_square()
+                                return False
+
+        print("{} king in mate!".format(self.move_order))
+        return True
+
     def set_custom_position(self, squares: [[Square]], move_order: chr, castles: str, *args) -> None:
         """
         *args for en passant square

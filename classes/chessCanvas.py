@@ -185,10 +185,7 @@ class chessCanvas(tk.Tk):
         else:
             print("Ilegal")
             self.start_line = self.end_line = self.start_rank = self.end_rank = -1
-
-        #self.board.castles.print_castles()
-        #self.board.print_position_as_text_from_white()
-
+        print(self.board.king_in_mate())
 
     def actualize(self):
         pass

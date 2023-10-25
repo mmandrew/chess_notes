@@ -11,6 +11,7 @@ class Queen:
 
     def do_move(start_square: Square, end_square: Square, board: Board):
         if Queen.check_move_legal(start_square, end_square, board):
+            board.unset_ep_square()
             end_square.piece = copy.deepcopy(start_square.piece)
             start_square.clear()
 
