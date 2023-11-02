@@ -133,9 +133,17 @@ class Board:
         print("No black king")
         return False
 
-    def king_in_check(self) -> bool:
+    def king_in_illegal_check(self) -> bool:
         return ((self.move_order == 'w') and self.black_king_in_check()) or \
                 ((self.move_order == 'b') and self.white_king_in_check())
+
+    def king_in_check(self) -> bool:
+        return ((self.move_order == 'b') and self.black_king_in_check()) or \
+                ((self.move_order == 'w') and self.white_king_in_check())
+
+    def king_in_stalemate(self) -> bool:
+        return (not self.king_in_check()) and (self.king_in_mate())
+
 
     #def get_white_king_square(self):
     #    for rank in self.board:
@@ -156,11 +164,9 @@ class Board:
                     for end_rank in self.board:
                         for end_square in end_rank:
                             if Move.check_move_legal(start_square, end_square, self):
-                                start_square.print_square()
-                                end_square.print_square()
+                                #start_square.print_square()
+                                #end_square.print_square()
                                 return False
-
-        print("{} king in mate!".format(self.move_order))
         return True
 
     def set_custom_position(self, squares: [[Square]], move_order: chr, castles: str, *args) -> None:

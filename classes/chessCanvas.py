@@ -10,6 +10,7 @@ import Consts
 import BoardSetup
 import math
 import Move
+import gameNotionField
 
 class chessCanvas(tk.Tk):
     def __init__(self): #, window: Tk):
@@ -54,7 +55,8 @@ class chessCanvas(tk.Tk):
         self.new_button.pack(side = TOP)
         self.new_button.bind("<Button-1>", self.create_new_setup)
 
-        self.pgn_text = Text(self.moves_frame)
+        #self.pgn_text = Text(self.moves_frame)
+        self.pgn_text = gameNotionField.gameNotionField(self.moves_frame, width=78)
         self.pgn_text.pack(side = TOP)
 
         self.save_button = Button(self.moves_frame, text = "Save", width = 45, command = self.save_chess_tree)
@@ -68,9 +70,7 @@ class chessCanvas(tk.Tk):
         self.board_frame.pack(side = RIGHT)
 
         self.canvas = Canvas(self.board_frame, width = self.winfo_width() // 2, height = 605)
-        #self.canvas.bind('<Button-1>', self.canvas_clicked)
         self.canvas.bind('<Button-1>', self.canvas_tapped)
-        #self.canvas.bind('<ButtonRelease>', self.canvas_released)
         self.canvas.bind('<ButtonRelease>', self.canvas_untapped)
         self.canvas.pack()
 
@@ -149,7 +149,6 @@ class chessCanvas(tk.Tk):
         if len(comment) == 2:
             rank = int(comment[0])
             line = int(comment[1])
-            #self.board.board[rank][line].piece_img = None
             self.clear_canvas_square(self.board.board[rank][line])
             return
 
@@ -177,8 +176,8 @@ class chessCanvas(tk.Tk):
         end_square = self.board.board[self.end_rank][self.end_line]
 
         if Move.Move.check_move_legal(start_square, end_square, self.board):
-            self.board, comment = Move.Move.do_move(start_square, end_square, self.board)
-            print(comment)
+            self.board, comment, move_note = Move.Move.do_move(start_square, end_square, self.board)
+            print(move_note)
 
             self.move_piece_img(self.start_rank, self.start_line, self.end_rank, self.end_line)
             self.process_comment_from_move(comment)
@@ -189,21 +188,6 @@ class chessCanvas(tk.Tk):
 
     def actualize(self):
         pass
-
-    """
-    def canvas_clicked(self, event):
-        if not (self.top_pad < event.y < self.bottom_pad) or not (self.left_pad < event.x < self.right_pad):
-            return
-
-        x_center, y_center = self.get_square_center(event.x, event.y)
-        line, rank = self.get_square_axises(x_center, y_center)
-        considered_square = self.board.board[line][rank]
-        if not considered_square.piece_stands():
-            return
-
-        self.last_cursor_x = event.x
-        self.last_cursor_y = event.y
-    """
 
     def actualize_board_look(self):
         for rank in range(8):
@@ -227,53 +211,8 @@ class chessCanvas(tk.Tk):
                 square.canvas_id = self.canvas.create_image(x_center, y_center, anchor="center", image=img_to_put)
                 square.piece_img = img_to_put
 
-    """
-    def canvas_released(self, event):
-        print("HELLO")
-        if self.last_cursor_x == -1:
-            return
-
-        if not (self.top_pad < event.y < self.bottom_pad) or not (self.left_pad < event.x < self.right_pad):
-            self.last_cursor_y = -1
-            self.last_cursor_x = -1
-            return
-
-        x_center, y_center = self.get_square_center(event.x, event.y)
-        line, rank = self.get_square_axises(x_center, y_center)
-        considered_square = self.board.board[line][rank]
-
-        last_x_center, last_y_center = self.get_square_center(self.last_cursor_x, self.last_cursor_y)
-        last_line, last_rank = self.get_square_axises(last_x_center, last_y_center)
-        considered_last_square = self.board.board[last_line][last_rank]
-        print("HELLO")
-        print(last_line, last_rank)
-        considered_last_square.print_square()
-        considered_square.print_square()
-
-        if not Move.Move.check_move_legal(start_square=considered_last_square, end_square=considered_square, board=self.board):
-            self.last_cursor_x = -1
-            self.last_cursor_y = -1
-            return
-
-        id = self.canvas.create_image(x_center, y_center, anchor="center", image=considered_last_square.piece_img)
-        #update square info
-        if considered_square.piece_stands():
-            self.canvas.delete(considered_square.canvas_id)
-        #considered_square.set_piece(considered_last_square.piece)
-        Move.Move.do_move(considered_last_square, considered_square, self.board)
-        #self.draw_pieces()
-        #self.actualize_board_look()
-        self.board.print_position_as_text_from_white()
-        # actualize board look after move done
-        # make proper castle
-        considered_square.piece_img = considered_last_square.piece_img
-        considered_square.canvas_id = id
-        #clear old
-        self.clear_canvas_square(considered_last_square)
-    """
-
     def open_setup_window(self):
-        setup_window = BoardSetup.board_set(self)
+        setup_window = BoardSetup.board_set(self, self.board)
         self.wait_window(setup_window)
 
     def calc_square_size(self):
@@ -295,8 +234,6 @@ class chessCanvas(tk.Tk):
 
 
     def draw_piece_on_square(self, square: Square):
-        #self.clear_canvas_square(square)
-        #self.canvas.delete(square.canvas_id)
         if not square.piece_stands():
             self.clear_canvas_square(square)
             return
@@ -354,7 +291,6 @@ class chessCanvas(tk.Tk):
                 print(lines)
         else:
             print("No file")
-        #self.load_button.update()
 
     def full_back(self):
         pass
@@ -393,4 +329,3 @@ class chessCanvas(tk.Tk):
 
 if __name__ == "__main__":
     pass
-

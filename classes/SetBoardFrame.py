@@ -12,10 +12,10 @@ import math
 import Piece
 
 class set_board_frame(tk.Frame):
-    def __init__(self, toplevel_window):
+    def __init__(self, toplevel_window, board):
         super().__init__(toplevel_window, width = 700, height = 900)
         self.top = toplevel_window
-        self.board = Board.Board()
+        self.board = board.copy_self()
         self.white_pieces_images = []
         self.white_pieces_btns = []
         self.black_pieces_images = []
@@ -40,7 +40,6 @@ class set_board_frame(tk.Frame):
         self.canvas.grid(row = 0, column = 0, rowspan = 7, columnspan = 7)
         self.canvas.bind('<Button-1>', self.board_pressed)
         self.canvas.bind('<Button-3>', self.set_square_ep)
-        #self.canvas.bind('<B1-Motion>', self.piece_motion)
         self.canvas.bind('<ButtonRelease>', self.released)
 
         self.board_img = ImageTk.PhotoImage(Image.open("../assets/board_image_1.png"))
@@ -68,6 +67,8 @@ class set_board_frame(tk.Frame):
         self.trash_image = ImageTk.PhotoImage(Image.open("../assets/trash.png"))
         self.trash_button = Button(self, image = self.trash_image, command = lambda j = -1, color = "trash": self.piece_button(j, color))
         self.trash_button.grid(row = 8, column = 6)
+
+        self.draw_board()
 
     def piece_button(self, j, color):
         if (j == -1) and color == "cursor":
@@ -186,7 +187,6 @@ class set_board_frame(tk.Frame):
                 self.moving_id = None
                 self.moving_image = None
 
-
     def clear_canvas_square(self, square: Square.Square):
         self.canvas.delete(square.canvas_id)
         square.clear()
@@ -247,11 +247,6 @@ class set_board_frame(tk.Frame):
         for rank in self.board.board:
             for square in rank:
                 self.draw_piece_on_square(square)
-
-
-
-
-
 
 
 if __name__ == "__main__":
