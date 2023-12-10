@@ -163,9 +163,21 @@ class chessCanvas(tk.Tk):
 
     def go_to_move(self, event):
         board_to_set = self.pgn_text.go_to_move(event)
-        self.board = board_to_set.copy_self()
+        #board = board_to_set.copy_self()
+        print("CURRENT")
         self.board.print_position_as_text_from_white()
-        self.actualize_board_look()
+        print("TARGET")
+        board_to_set.print_position_as_text_from_white()
+        #self.full_board_clear()
+        self.actualize_board_look_to(board_to_set)
+        print("\nb8 description")
+        self.board.board[7][1].print_square()
+        print(self.board.board[7][1].canvas_id)
+        self.board = board_to_set.copy_self()
+        self.board.board[7][1].print_square()
+        print(self.board.board[7][1].canvas_id)
+        print("\nFINAL CURRENT")
+        #self.board.print_position_as_text_from_white()
 
     def canvas_untapped(self, event):
         if not (self.top_pad < event.y < self.bottom_pad) or not (self.left_pad < event.x < self.right_pad):
@@ -197,6 +209,37 @@ class chessCanvas(tk.Tk):
 
     def actualize(self):
         self.draw_pieces()
+
+    def actualize_board_look_to(self, board: Board.Board):
+        for rank in range(8):
+            for line in range(8):
+                target_square = board.board[rank][line]
+                current_square = self.board.board[rank][line]
+                target_square.print_square()
+                current_square.print_square()
+                if not target_square.piece_stands():
+                    #current_square.print_square()
+                    print(current_square.canvas_id, end='')
+                    self.clear_canvas_square(current_square)
+                    print(current_square.canvas_id, end='')
+                    print("HERE ", end='')
+                    target_square.print_square()
+                    current_square.print_square()
+                    continue
+                x_center, y_center = self.get_square_center_by_line_rank(line, rank)
+
+                if target_square.piece.color == 'w':
+                    img_to_put = self.white_pieces_images[Consts.piece_set.index(target_square.piece.name)]
+                else:
+                    img_to_put = self.black_pieces_images[Consts.piece_set.index(target_square.piece.name)]
+
+                print(current_square.canvas_id, end=' ')
+                current_square.canvas_id = self.canvas.create_image(x_center, y_center, anchor="center", image=img_to_put)
+                print(current_square.canvas_id, end='')
+                current_square.piece_img = img_to_put
+                target_square.print_square()
+                current_square.print_square()
+
 
     def actualize_board_look(self):
         for rank in range(8):

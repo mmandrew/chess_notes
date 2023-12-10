@@ -32,8 +32,10 @@ class Square:
         #new_s.color = self.color
         new_s.piece = self.piece.copy_self()
         new_s.is_ep = self.is_ep
-        new_s.canvas_id = 0
-        new_s.piece_img = None
+        new_s.canvas_id = self.canvas_id
+        #new_s.piece_img = self.piece_img
+        #new_s.canvas_id = 0
+        #new_s.piece_img = None
 
         return new_s
 
