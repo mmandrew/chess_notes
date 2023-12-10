@@ -20,6 +20,7 @@ class chessCanvas(tk.Tk):
         self.title("Chess notes")
         self.geometry("1250x655")
         self.update_idletasks()
+        self.start_board = Board.Board()
         self.board = Board.Board()
 
         self.left_pad = 20
@@ -56,7 +57,8 @@ class chessCanvas(tk.Tk):
         self.new_button.bind("<Button-1>", self.create_new_setup)
 
         #self.pgn_text = Text(self.moves_frame)
-        self.pgn_text = gameNotionField.gameNotionField(self.moves_frame, width=78)
+        self.pgn_text = gameNotionField.gameNotionField(self.start_board, self.moves_frame, width=78)
+        self.pgn_text.bind("<Button-1>", self.go_to_move)
         self.pgn_text.pack(side = TOP)
 
         self.save_button = Button(self.moves_frame, text = "Save", width = 45, command = self.save_chess_tree)
@@ -159,6 +161,11 @@ class chessCanvas(tk.Tk):
             end_line = int(comment[3])
             self.move_piece_img(start_rank, start_line, end_rank, end_line)
 
+    def go_to_move(self, event):
+        board_to_set = self.pgn_text.go_to_move(event)
+        self.board = board_to_set.copy_self()
+        self.board.print_position_as_text_from_white()
+        self.actualize_board_look()
 
     def canvas_untapped(self, event):
         if not (self.top_pad < event.y < self.bottom_pad) or not (self.left_pad < event.x < self.right_pad):
@@ -178,6 +185,8 @@ class chessCanvas(tk.Tk):
         if Move.Move.check_move_legal(start_square, end_square, self.board):
             self.board, comment, move_note = Move.Move.do_move(start_square, end_square, self.board)
             print(move_note)
+            self.pgn_text.record_a_move(move_note, self.board.board_to_fen())
+            #print(self.board.board_to_fen())
 
             self.move_piece_img(self.start_rank, self.start_line, self.end_rank, self.end_line)
             self.process_comment_from_move(comment)
@@ -187,7 +196,7 @@ class chessCanvas(tk.Tk):
         print(self.board.king_in_mate())
 
     def actualize(self):
-        pass
+        self.draw_pieces()
 
     def actualize_board_look(self):
         for rank in range(8):
@@ -214,6 +223,10 @@ class chessCanvas(tk.Tk):
     def open_setup_window(self):
         setup_window = BoardSetup.board_set(self, self.board)
         self.wait_window(setup_window)
+        self.start_board = self.board.copy_self()
+        self.pgn_text.set_start_board(self.start_board)
+        #print("BOARD", self.board.board_to_fen())
+        #print("START_BOARD", self.start_board.board_to_fen())
 
     def calc_square_size(self):
         return (self.bottom_pad - self.top_pad) / 8
@@ -231,7 +244,6 @@ class chessCanvas(tk.Tk):
         self.canvas.delete(square.canvas_id)
         square.canvas_id = 0
         square.piece_img = None
-
 
     def draw_piece_on_square(self, square: Square):
         if not square.piece_stands():
@@ -295,8 +307,8 @@ class chessCanvas(tk.Tk):
     def full_back(self):
         pass
 
-    def set_canvas_board(self, board: Board.Board) -> None:
-        self.board = board
+    #def set_canvas_board(self, board: Board.Board) -> None:
+    #    self.board = board
 
     def draw_piece_on_board(self, piece_short: chr, square: Square) -> None:
         self.canvas.pack()

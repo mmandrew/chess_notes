@@ -145,7 +145,7 @@ class board_set(tk.Toplevel):
         else:
             self.window.board.castles.set_black_queenside_castle_impossible()
 
-        self.window.board.ep_square = self.ep_text.get("1.0", END) or ''
+        self.window.board.ep_square = self.ep_text.get("1.0", END)[:-1] or ''
         self.window.board.move_order = self.move_order.get()
         self.window.board.castles.print_castles()
 

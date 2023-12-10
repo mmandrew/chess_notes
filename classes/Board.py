@@ -73,7 +73,7 @@ class Board:
         ep = self.ep_square
         if (len(ep) == 2):
             self.board[int(ep[1]) - 1][ord(ep[0]) - ord('a')].unset_ep()
-            self.ep_square
+            self.ep_square = ''
 
     def set_start_position(self):
         for square in self.board[1]:
@@ -188,8 +188,10 @@ class Board:
             rank_code = ""
             no_piece_counter = 0
             for square in rank:
-                piece = square.piece
-                if piece != '':
+                piece = square.piece.copy_self()
+                #piece.print_piece()
+                #square.print_square()
+                if piece.name != '':
                     if no_piece_counter > 0:
                         rank_code += str(no_piece_counter)
                         no_piece_counter = 0
@@ -213,8 +215,8 @@ class Board:
         if not all_castles:
             all_castles = "-"
         fen_board += all_castles + ' '
-        if self.ep_square:
-            fen_board += self.ep_square.line + str(self.ep_square.rank)
+        if self.ep_square not in ('', '-'):
+            fen_board += self.ep_square[0] + str(self.ep_square[1])
         else:
             fen_board += '-'
 

@@ -25,5 +25,8 @@ class Piece:
     def remove(self):
         pass
 
+    def print_piece(self):
+        print("name", self.name, "color", self.color, end="")
+
 if __name__ == "__main__":
     pass
