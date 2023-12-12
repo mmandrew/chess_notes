@@ -163,6 +163,10 @@ class chessCanvas(tk.Tk):
 
     def go_to_move(self, event):
         board_to_set = self.pgn_text.go_to_move(event)
+        self.full_board_clear()
+        self.board = board_to_set.copy_self()
+        self.draw_pieces()
+        """
         #board = board_to_set.copy_self()
         print("CURRENT")
         self.board.print_position_as_text_from_white()
@@ -171,13 +175,15 @@ class chessCanvas(tk.Tk):
         #self.full_board_clear()
         self.actualize_board_look_to(board_to_set)
         print("\nb8 description")
-        self.board.board[7][1].print_square()
-        print(self.board.board[7][1].canvas_id)
-        self.board = board_to_set.copy_self()
-        self.board.board[7][1].print_square()
-        print(self.board.board[7][1].canvas_id)
+        self.board.board[4][4].print_square()
+        print(self.board.board[4][4].canvas_id)
+        #self.board = board_to_set.copy_self()
+        self.board = self.board.mix_pieces_and_images(board_to_set)
+        self.board.board[4][4].print_square()
+        print(self.board.board[4][4].canvas_id)
         print("\nFINAL CURRENT")
         #self.board.print_position_as_text_from_white()
+        """
 
     def canvas_untapped(self, event):
         if not (self.top_pad < event.y < self.bottom_pad) or not (self.left_pad < event.x < self.right_pad):
@@ -219,9 +225,9 @@ class chessCanvas(tk.Tk):
                 current_square.print_square()
                 if not target_square.piece_stands():
                     #current_square.print_square()
-                    print(current_square.canvas_id, end='')
+                    print(current_square.canvas_id, end=' ')
                     self.clear_canvas_square(current_square)
-                    print(current_square.canvas_id, end='')
+                    print(current_square.canvas_id, end=' ')
                     print("HERE ", end='')
                     target_square.print_square()
                     current_square.print_square()
@@ -335,7 +341,6 @@ class chessCanvas(tk.Tk):
             with open(path, 'w+') as f:
                 for line in lines:
                     f.write(line + '\n')
-
 
     def load_chess_tree(self):
         path = filedialog.askopenfile(filetypes=(("Text files", "*.txt"), ("All files", "*.*")))

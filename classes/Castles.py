@@ -33,7 +33,7 @@ class Castles:
         if "K" in castles:
             self.set_white_kingside_castle_possible()
         else:
-            self.set_white_kingside_castle_imossible()
+            self.set_white_kingside_castle_impossible()
         if "Q" in castles:
             self.set_white_queenside_castle_possible()
         else:
