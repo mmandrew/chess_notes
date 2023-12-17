@@ -16,10 +16,12 @@ class gameNotionField(scrolledtext.ScrolledText):
     def __init__(self, start_board: Board.Board(), *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self.tab_len = 4
+
         self.start_board: Board.Board() = start_board.copy_self()
 
         #self.current_move = [0, 1, 'w'] #(line, move, order). line and move start from 1 !!!
-        self.current_move = {"line": 1, "move": 1, "order": 'w'}
+        self.current_move = {"line": 0, "move": 1, "order": 'w'}
         self.lines = ["START"]
         self.lines_and_fens = [[{"move": "START", "fen": self.start_board.board_to_fen()}], []]
 
@@ -28,6 +30,14 @@ class gameNotionField(scrolledtext.ScrolledText):
         self.bind("<Key>", self.remember_text)
         self.bind("<<Modified>>", self.remember_text)
 
+    def tab_counter_in_line(self, index):
+        space_counter = 0
+        while self.lines[space_counter] != ' ':
+            space_counter += 1
+
+        return space_counter/self.tab_len
+
+
     def set_start_board(self, start_board: Board.Board):
         self.start_board = start_board.copy_self()
         self.lines_and_fens[0][0]["fen"] = self.start_board.board_to_fen()
@@ -35,7 +45,6 @@ class gameNotionField(scrolledtext.ScrolledText):
     def update_moves_lines(self):
         text = self.get(1.0, END)
         self.lines = ["START"] + text.split("\n")[:-1]
-        #self.lines = text.split("\n")[:-1]
 
     def update_moves_and_fens(self):
         pass
@@ -50,15 +59,12 @@ class gameNotionField(scrolledtext.ScrolledText):
         for line in self.lines:
             print("line", line)
         moves = ' '.join(lines[self.current_move["line"]].split(' ')[:self.current_move["move"]])
-        print(moves)
-        print(len(moves) + 1)
         return len(moves) + 1
 
     def remember_text(self, event):
         self.update_moves_lines()
 
     def base_record_move(self, move_note, fen_after_move):
-        #current_move_number = int(self.lines[self.current_move["line"]].split(')')[0])
         current_move_number = self.current_move["move"]
         move_line = self.current_move["line"]
         if self.current_move["order"] == 'b':
@@ -70,10 +76,10 @@ class gameNotionField(scrolledtext.ScrolledText):
                self.lines_and_fens.append([])
             self.lines_and_fens[move_line].append({"move": move_rec, "fen": fen_after_move})
 
-            #move_line = move_line
-
             self.current_move["line"] += 1
         else:
+            self.current_move["line"] += 1
+            move_line = self.current_move["line"]
             move_rec = '{}){}'.format(current_move_number, move_note)
             if move_line == 1:
                 self.insert(END, move_rec)
@@ -86,9 +92,37 @@ class gameNotionField(scrolledtext.ScrolledText):
 
         return move_line
 
+    def side_record_move(self, move_note, fen_after_move):
+        print("SIDE RECORD HERE")
+        pass
+
     def test_record_a_move(self, event):
         self.base_record_move()
         self.flip_move_order()
+
+    def reposition_current_move(self, line_num: int, left_space: int, right_space: int) -> None:
+        self.current_move["line"] = line_num
+        line = self.lines[self.current_move["line"]]
+
+        move_rec = line[left_space + 1:right_space]
+        if ')' in move_rec:
+            if "..." in move_rec:
+                self.current_move["order"] = 'w'
+                self.current_move["move"] = int(move_rec[:move_rec.find(')')]) + 1
+            else:
+                self.current_move["order"] = 'b'
+                self.current_move["move"] = int(move_rec[:move_rec.find(')')])
+        else:
+            self.current_move["order"] = 'w'
+            index = left_space - 1
+            while (line[index] != ' ') and index > 0:
+                index -= 1
+            if index > 0:
+                prev_move_rec = line[index + 1:left_space]
+            else:
+                prev_move_rec = line[index:left_space]
+            self.current_move["move"] = int(prev_move_rec[:prev_move_rec.find(')')]) + 1
+        print("END OF REPOSITION", self.current_move)
 
     def highlight_move(self, line_num: int, char_num: int) -> None:
 
@@ -96,6 +130,9 @@ class gameNotionField(scrolledtext.ScrolledText):
             char_num = len(self.lines[line_num]) - 1
 
         current_line = self.lines[line_num]
+        if len(current_line) == 0:
+            return
+
         if current_line[char_num] == ' ':
             left_space = char_num - 1
         else:
@@ -114,16 +151,13 @@ class gameNotionField(scrolledtext.ScrolledText):
 
         self.tag_delete("black")
         self.tag_config("black", background="black", foreground="white")
-        self.tag_add("black", "{}.{}".format(line_num, left_space + 1), "{}.{}".format(line_num, right_space)) # THIS ONE IS IMPORTANT
+        self.tag_add("black", "{}.{}".format(line_num, left_space + 1), "{}.{}".format(line_num, right_space))
+        self.reposition_current_move(line_num, left_space, right_space)
         return left_space
 
     def get_fen_after_move(self, line_num, left_space_index):
         left_part = self.lines[line_num][:left_space_index + 1]
-        print(left_part)
-        print("index", left_space_index + 1)
         space_count = left_part.count(" ")
-        print("space count", space_count)
-        print(self.lines_and_fens[line_num][space_count])
 
         return self.lines_and_fens[line_num][space_count]["fen"]
 
@@ -138,15 +172,15 @@ class gameNotionField(scrolledtext.ScrolledText):
 
 
     def record_a_move(self, move_note, fen_after_move):
-        #print(self.current_move)
-        move_line = self.base_record_move(move_note, fen_after_move)
+        if ((self.current_move["order"] == 'w') and (len(self.lines) == self.current_move["line"] + 1)) or \
+            ((self.current_move["order"] == 'b') and (len(self.lines) - 1 == self.current_move["line"])):
+            move_line = self.base_record_move(move_note, fen_after_move)
+        else:
+            move_line = self.side_record_move(move_note, fen_after_move)
+        print("MOVE_LINE", move_line)
         self.update_moves_lines()
         move_index = len(self.lines[move_line]) - 1
         self.highlight_move(move_line, move_index)
-        print(self.current_move)
-        self.flip_move_order()
-        print(self.lines_and_fens)
-        print(self.lines)
 
     def next_move(self):
         pass

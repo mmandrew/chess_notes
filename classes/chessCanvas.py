@@ -166,24 +166,6 @@ class chessCanvas(tk.Tk):
         self.full_board_clear()
         self.board = board_to_set.copy_self()
         self.draw_pieces()
-        """
-        #board = board_to_set.copy_self()
-        print("CURRENT")
-        self.board.print_position_as_text_from_white()
-        print("TARGET")
-        board_to_set.print_position_as_text_from_white()
-        #self.full_board_clear()
-        self.actualize_board_look_to(board_to_set)
-        print("\nb8 description")
-        self.board.board[4][4].print_square()
-        print(self.board.board[4][4].canvas_id)
-        #self.board = board_to_set.copy_self()
-        self.board = self.board.mix_pieces_and_images(board_to_set)
-        self.board.board[4][4].print_square()
-        print(self.board.board[4][4].canvas_id)
-        print("\nFINAL CURRENT")
-        #self.board.print_position_as_text_from_white()
-        """
 
     def canvas_untapped(self, event):
         if not (self.top_pad < event.y < self.bottom_pad) or not (self.left_pad < event.x < self.right_pad):
