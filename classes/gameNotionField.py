@@ -30,13 +30,12 @@ class gameNotionField(scrolledtext.ScrolledText):
         self.bind("<Key>", self.remember_text)
         self.bind("<<Modified>>", self.remember_text)
 
-    def tab_counter_in_line(self, index):
+    def space_counter_in_line(self, index):
         space_counter = 0
-        while self.lines[space_counter] != ' ':
+        while self.lines[index][space_counter] == ' ':
             space_counter += 1
 
-        return space_counter/self.tab_len
-
+        return space_counter
 
     def set_start_board(self, start_board: Board.Board):
         self.start_board = start_board.copy_self()
@@ -93,8 +92,15 @@ class gameNotionField(scrolledtext.ScrolledText):
         return move_line
 
     def side_record_move(self, move_note, fen_after_move):
+        #TODO: ADD TO LINES_AND_FENS
         print("SIDE RECORD HERE")
-        pass
+        s = self.get_right_space_by_current_move()
+        print(s, s[-1])
+        right_space = len(s)
+        print(move_note, right_space)
+        r = self.compose_inter_string(move_note, right_space)
+        print("INTER STRING", r)
+        return r
 
     def test_record_a_move(self, event):
         self.base_record_move()
@@ -124,15 +130,8 @@ class gameNotionField(scrolledtext.ScrolledText):
             self.current_move["move"] = int(prev_move_rec[:prev_move_rec.find(')')]) + 1
         print("END OF REPOSITION", self.current_move)
 
-    def highlight_move(self, line_num: int, char_num: int) -> None:
-
-        if char_num >= len(self.lines[line_num]):
-            char_num = len(self.lines[line_num]) - 1
-
+    def get_left_and_right_space_around_char_num(self, line_num, char_num):
         current_line = self.lines[line_num]
-        if len(current_line) == 0:
-            return
-
         if current_line[char_num] == ' ':
             left_space = char_num - 1
         else:
@@ -148,6 +147,104 @@ class gameNotionField(scrolledtext.ScrolledText):
             right_space += 1
             if right_space == len(current_line):
                 break
+
+        return [left_space, right_space]
+
+    def get_right_space_by_current_move(self): #basically it is a right space of highlighted move
+        current_line = self.lines[self.current_move["line"]]
+        if self.current_move["order"] == "b":
+            current_move = self.current_move["move"]
+            print("CURRENT MOVE B", current_move)
+        else:
+            current_move = self.current_move["move"] - 1
+            print("CURRENT MOVE W", current_move)
+        print("CURRENT LINE", current_line)
+        pre_move_num_part, after_move_num_part = current_line.split(str(current_move) + ')')
+        after_move_num_part = str(current_move) + ')' + after_move_num_part
+        if self.current_move["order"] == "b":
+            return pre_move_num_part + after_move_num_part.split(' ')[0]
+        else:
+            return pre_move_num_part + ' '.join(after_move_num_part.split(' ')[:2])
+
+    def compose_inter_string(self, move_rec, right_space):
+
+        inter_string = ""
+        current_line = self.lines[self.current_move["line"]]
+
+        carry_to_next_line = ((right_space < len(current_line)) and (current_line[0] != ' '))
+
+        print("CURRENT LINE", current_line)
+
+        #1
+        if (self.current_move["order"] == "b") and carry_to_next_line:
+            inter_string += "..."
+
+        #left_space, right_space = self.get_left_and_right_space_around_char_num(line_num, char_num)
+
+        #2, 2.1
+        #if (right_space < len(current_line)) and (current_line[0] != ' '):
+        if carry_to_next_line:
+            #print(self.space_counter_in_line(self.current_move["line"]))
+            inter_string += "\n" + " " * (self.space_counter_in_line(self.current_move["line"]) + self.tab_len)
+            move_line = self.current_move["line"] + 1
+        else:
+            move_line = self.current_move["line"]
+
+        #3
+        if carry_to_next_line:
+            inter_string += str(self.current_move["move"]) + ')'
+        else:
+            if self.current_move["order"] == "w":
+                inter_string += (" " + str(self.current_move["move"]) + ')')
+            else:
+                inter_string += " "
+
+        #4
+        if (self.current_move["order"] == "b") and carry_to_next_line:
+            inter_string += "..."
+
+        #5
+        inter_string += move_rec #+ ' '
+
+        #6
+        #if (right_space < len(current_line)) or (current_line[0] != ' '):
+        if carry_to_next_line:
+            inter_string += "\n" + " " * (self.space_counter_in_line(self.current_move["line"]))
+
+        print("INTER_STRING", inter_string)
+        # NEED TO INSERT INTER_STRING
+        self.insert("{}.{}".format(self.current_move["line"], right_space), inter_string)
+
+        return move_line
+
+    def highlight_move(self, line_num: int, char_num: int) -> None:
+
+        if char_num >= len(self.lines[line_num]):
+            char_num = len(self.lines[line_num]) - 1
+
+        current_line = self.lines[line_num]
+        if len(current_line) == 0:
+            return
+
+        """
+        if current_line[char_num] == ' ':
+            left_space = char_num - 1
+        else:
+            left_space = char_num
+
+        while current_line[left_space] != ' ':
+            left_space -= 1
+            if left_space == -1:
+                break
+
+        right_space = char_num
+        while current_line[right_space] != ' ':
+            right_space += 1
+            if right_space == len(current_line):
+                break
+        """
+
+        left_space, right_space = self.get_left_and_right_space_around_char_num(line_num, char_num)
 
         self.tag_delete("black")
         self.tag_config("black", background="black", foreground="white")
@@ -170,13 +267,17 @@ class gameNotionField(scrolledtext.ScrolledText):
         return boart_to_set
         #fen_to_set.fen_to_board().print_position_as_text_from_white()
 
+    def current_move_is_main(self):
+        return ((self.current_move["order"] == 'w') and (len(self.lines) == self.current_move["line"] + 1)) or \
+            ((self.current_move["order"] == 'b') and (len(self.lines) - 1 == self.current_move["line"]) and (' ' not in self.lines[self.current_move["line"]]))
 
     def record_a_move(self, move_note, fen_after_move):
-        if ((self.current_move["order"] == 'w') and (len(self.lines) == self.current_move["line"] + 1)) or \
-            ((self.current_move["order"] == 'b') and (len(self.lines) - 1 == self.current_move["line"])):
+
+        if self.current_move_is_main():
             move_line = self.base_record_move(move_note, fen_after_move)
         else:
             move_line = self.side_record_move(move_note, fen_after_move)
+
         print("MOVE_LINE", move_line)
         self.update_moves_lines()
         move_index = len(self.lines[move_line]) - 1
