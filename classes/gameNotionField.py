@@ -31,6 +31,7 @@ class gameNotionField(scrolledtext.ScrolledText):
         self.bind("<<Modified>>", self.remember_text)
 
     def space_counter_in_line(self, index):
+        #counts sapces at start
         space_counter = 0
         while self.lines[index][space_counter] == ' ':
             space_counter += 1
@@ -92,19 +93,43 @@ class gameNotionField(scrolledtext.ScrolledText):
         return move_line
 
     def side_record_move(self, move_note, fen_after_move):
-        #TODO: ADD TO LINES_AND_FENS
         print("SIDE RECORD HERE")
+        print("LINES NOW")
+        print(self.lines)
         s = self.get_right_space_by_current_move()
-        print(s, s[-1])
+        #print(s, s[-1])
         right_space = len(s)
-        print(move_note, right_space)
-        r = self.compose_inter_string(move_note, right_space)
+        #print(move_note, right_space)
+
+        current_line = self.lines[self.current_move["line"]]
+        #if (((right_space < len(current_line)) and (current_line[0] != ' '))) or (current_line[0]):
+        print("RIGHT SPACE", right_space)
+        print("CURRENT LINE", len(current_line), current_line)
+        if ((right_space < len(current_line)) or (current_line[0] != ' ')):
+            print("CARRIYNG")
+            r = self.compose_inter_string_carriyng(move_note, right_space)
+            self.add_fen_for_side_move_carriyng(move_note, fen_after_move, right_space)
+        else:
+            print("NOT CARRIYNG")
+            r = self.compose_inter_string_not_carriyng(move_note, right_space)
+            self.add_fen_for_side_move_not_carriyng(move_note, fen_after_move)
+
         print("INTER STRING", r)
         return r
 
     def test_record_a_move(self, event):
         self.base_record_move()
         self.flip_move_order()
+
+    def span_spaces_at_start(self, s):
+        if not s:
+            return ''
+        s1 = s
+        while s1[0] == ' ':
+            s1 = s1[1:]
+            if not s1:
+                return ''
+        return s1
 
     def reposition_current_move(self, line_num: int, left_space: int, right_space: int) -> None:
         self.current_move["line"] = line_num
@@ -154,11 +179,11 @@ class gameNotionField(scrolledtext.ScrolledText):
         current_line = self.lines[self.current_move["line"]]
         if self.current_move["order"] == "b":
             current_move = self.current_move["move"]
-            print("CURRENT MOVE B", current_move)
+            #print("CURRENT MOVE B", current_move)
         else:
             current_move = self.current_move["move"] - 1
-            print("CURRENT MOVE W", current_move)
-        print("CURRENT LINE", current_line)
+            #print("CURRENT MOVE W", current_move)
+        #print("CURRENT LINE", current_line)
         pre_move_num_part, after_move_num_part = current_line.split(str(current_move) + ')')
         after_move_num_part = str(current_move) + ')' + after_move_num_part
         if self.current_move["order"] == "b":
@@ -166,7 +191,75 @@ class gameNotionField(scrolledtext.ScrolledText):
         else:
             return pre_move_num_part + ' '.join(after_move_num_part.split(' ')[:2])
 
+    def add_fen_for_side_move_carriyng(self, move_rec, pos_fen, right_space):
+        current_line_num = self.current_move["line"]
+        space_count = self.span_spaces_at_start(self.lines[current_line_num][:right_space]).count(' ')
+        after_move = self.lines_and_fens[current_line_num][space_count + 1:]
+        self.lines_and_fens[current_line_num] = self.lines_and_fens[current_line_num][:space_count + 1]
+
+        self.lines_and_fens.insert(current_line_num + 1, [])
+        if self.current_move["order"] == "b":
+            self.lines_and_fens.insert(current_line_num + 2, after_move)
+        self.lines_and_fens[current_line_num + 1].append({"move": move_rec, "fen": pos_fen})
+
+    def add_fen_for_side_move_not_carriyng(self, move_rec, pos_fen):
+        current_line_num = self.current_move["line"]
+        self.lines_and_fens[current_line_num].append({"move": move_rec, "fen": pos_fen})
+
+    def compose_inter_string_carriyng(self, move_rec, right_space):
+        inter_string = ""
+        current_line = self.lines[self.current_move["line"]]
+
+        if (self.current_move["order"] == "b"):
+            inter_string += " ..."
+
+        inter_string += "\n" + " " * (self.space_counter_in_line(self.current_move["line"]) + self.tab_len)
+        move_line = self.current_move["line"] + 1
+
+        inter_string += str(self.current_move["move"]) + ')'
+
+        if (self.current_move["order"] == "b"):
+            inter_string += "..."
+
+        inter_string += move_rec
+        if self.current_move["order"] == "b":
+            inter_string += "\n"
+        if (self.current_move["order"] == "w") and (current_line.startswith(' ')):
+            inter_string += "\n"
+        inter_string += " " * (self.space_counter_in_line(self.current_move["line"]))
+
+        if self.current_move["order"] == 'b':
+            inter_string += str(self.current_move["move"]) + ')...'
+
+        print("INTER_STRING", inter_string)
+        self.insert("{}.{}".format(self.current_move["line"], right_space), inter_string)
+        return move_line
+
+    def compose_inter_string_not_carriyng(self, move_rec, right_space):
+
+        inter_string = ""
+        current_line = self.lines[self.current_move["line"]]
+
+        print("CURRENT LINE", current_line)
+
+        move_line = self.current_move["line"]
+
+        if self.current_move["order"] == "w":
+            inter_string += (" " + str(self.current_move["move"]) + ')')
+        else:
+            inter_string += " "
+
+        inter_string += move_rec
+
+        print("INTER_STRING", inter_string)
+        # NEED TO INSERT INTER_STRING
+        self.insert("{}.{}".format(self.current_move["line"], right_space), inter_string)
+        return move_line
+
+    """
     def compose_inter_string(self, move_rec, right_space):
+
+        "TODO: Split this on two methods depending on whether or not we carry on the line"
 
         inter_string = ""
         current_line = self.lines[self.current_move["line"]]
@@ -216,6 +309,7 @@ class gameNotionField(scrolledtext.ScrolledText):
         self.insert("{}.{}".format(self.current_move["line"], right_space), inter_string)
 
         return move_line
+    """
 
     def highlight_move(self, line_num: int, char_num: int) -> None:
 
@@ -254,8 +348,9 @@ class gameNotionField(scrolledtext.ScrolledText):
 
     def get_fen_after_move(self, line_num, left_space_index):
         left_part = self.lines[line_num][:left_space_index + 1]
-        space_count = left_part.count(" ")
-
+        space_count = self.span_spaces_at_start(left_part).count(" ")
+        if "... " in left_part:
+            space_count -= 1
         return self.lines_and_fens[line_num][space_count]["fen"]
 
     def go_to_move(self, event):
@@ -278,7 +373,7 @@ class gameNotionField(scrolledtext.ScrolledText):
         else:
             move_line = self.side_record_move(move_note, fen_after_move)
 
-        print("MOVE_LINE", move_line)
+        #print("MOVE_LINE", move_line)
         self.update_moves_lines()
         move_index = len(self.lines[move_line]) - 1
         self.highlight_move(move_line, move_index)
