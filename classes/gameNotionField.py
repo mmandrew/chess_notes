@@ -31,7 +31,6 @@ class gameNotionField(scrolledtext.ScrolledText):
         self.bind("<<Modified>>", self.remember_text)
 
     def space_counter_in_line(self, index):
-        #counts sapces at start
         space_counter = 0
         while self.lines[index][space_counter] == ' ':
             space_counter += 1
@@ -99,10 +98,8 @@ class gameNotionField(scrolledtext.ScrolledText):
         s = self.get_right_space_by_current_move()
         #print(s, s[-1])
         right_space = len(s)
-        #print(move_note, right_space)
 
         current_line = self.lines[self.current_move["line"]]
-        #if (((right_space < len(current_line)) and (current_line[0] != ' '))) or (current_line[0]):
         print("RIGHT SPACE", right_space)
         print("CURRENT LINE", len(current_line), current_line)
         if ((right_space < len(current_line)) or (current_line[0] != ' ')):
@@ -114,7 +111,6 @@ class gameNotionField(scrolledtext.ScrolledText):
             r = self.compose_inter_string_not_carriyng(move_note, right_space)
             self.add_fen_for_side_move_not_carriyng(move_note, fen_after_move)
 
-        print("INTER STRING", r)
         return r
 
     def test_record_a_move(self, event):
@@ -153,7 +149,6 @@ class gameNotionField(scrolledtext.ScrolledText):
             else:
                 prev_move_rec = line[index:left_space]
             self.current_move["move"] = int(prev_move_rec[:prev_move_rec.find(')')]) + 1
-        print("END OF REPOSITION", self.current_move)
 
     def get_left_and_right_space_around_char_num(self, line_num, char_num):
         current_line = self.lines[line_num]
@@ -179,11 +174,8 @@ class gameNotionField(scrolledtext.ScrolledText):
         current_line = self.lines[self.current_move["line"]]
         if self.current_move["order"] == "b":
             current_move = self.current_move["move"]
-            #print("CURRENT MOVE B", current_move)
         else:
             current_move = self.current_move["move"] - 1
-            #print("CURRENT MOVE W", current_move)
-        #print("CURRENT LINE", current_line)
         pre_move_num_part, after_move_num_part = current_line.split(str(current_move) + ')')
         after_move_num_part = str(current_move) + ')' + after_move_num_part
         if self.current_move["order"] == "b":
@@ -198,9 +190,13 @@ class gameNotionField(scrolledtext.ScrolledText):
         self.lines_and_fens[current_line_num] = self.lines_and_fens[current_line_num][:space_count + 1]
 
         self.lines_and_fens.insert(current_line_num + 1, [])
-        if self.current_move["order"] == "b":
+        if (self.current_move["order"] == "b") and (len(after_move) > 0):
             self.lines_and_fens.insert(current_line_num + 2, after_move)
+
         self.lines_and_fens[current_line_num + 1].append({"move": move_rec, "fen": pos_fen})
+
+        if (self.current_move["order"] == "w") and len(after_move) > 0:
+            self.lines_and_fens.insert(current_line_num + 2, after_move)
 
     def add_fen_for_side_move_not_carriyng(self, move_rec, pos_fen):
         current_line_num = self.current_move["line"]
@@ -231,8 +227,11 @@ class gameNotionField(scrolledtext.ScrolledText):
         if self.current_move["order"] == 'b':
             inter_string += str(self.current_move["move"]) + ')...'
 
-        print("INTER_STRING", inter_string)
-        self.insert("{}.{}".format(self.current_move["line"], right_space), inter_string)
+        if (inter_string.startswith(" ...")) and (inter_string.endswith("...")) and (current_line.endswith("...")):
+            inter_string = "\n" + inter_string.split("\n")[1]
+            self.insert("{}.{}".format(self.current_move["line"], right_space + 4), inter_string)
+        else:
+            self.insert("{}.{}".format(self.current_move["line"], right_space), inter_string)
         return move_line
 
     def compose_inter_string_not_carriyng(self, move_rec, right_space):
@@ -351,6 +350,14 @@ class gameNotionField(scrolledtext.ScrolledText):
         space_count = self.span_spaces_at_start(left_part).count(" ")
         if "... " in left_part:
             space_count -= 1
+
+        print("LINES HERE")
+        for line in self.lines:
+            print(line)
+
+        print("LINES AND FENS HERE")
+        for line in self.lines_and_fens:
+            print(line)
         return self.lines_and_fens[line_num][space_count]["fen"]
 
     def go_to_move(self, event):
@@ -372,6 +379,10 @@ class gameNotionField(scrolledtext.ScrolledText):
             move_line = self.base_record_move(move_note, fen_after_move)
         else:
             move_line = self.side_record_move(move_note, fen_after_move)
+
+        print("LINES AND FENS HERE")
+        for line in self.lines_and_fens:
+            print(line)
 
         #print("MOVE_LINE", move_line)
         self.update_moves_lines()

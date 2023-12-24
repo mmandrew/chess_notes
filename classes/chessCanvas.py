@@ -63,7 +63,7 @@ class chessCanvas(tk.Tk):
 
         self.save_button = Button(self.moves_frame, text = "Save", width = 45, command = self.save_chess_tree)
         self.save_button.pack(side = LEFT)
-        #self.save_button.bind("<Button-1>", self.save_chess_tree)
+        self.save_button.bind("<Button-1>", self.save_chess_tree)
 
         self.load_button = Button(self.moves_frame, text = "Load", width = 45, command = self.load_chess_tree)
         self.load_button.pack(side = RIGHT)
