@@ -45,6 +45,12 @@ class gameNotionField(scrolledtext.ScrolledText):
         text = self.get(1.0, END)
         self.lines = ["START"] + text.split("\n")[:-1]
 
+    def update_text_by_lines(self):
+        self.delete(1.0, END)
+        self.insert(1.0, self.lines[1])
+        for line in self.lines[2:]:
+            self.insert(END, "\n" + line)
+
     def update_moves_and_fens(self):
         pass
 
@@ -255,61 +261,6 @@ class gameNotionField(scrolledtext.ScrolledText):
         self.insert("{}.{}".format(self.current_move["line"], right_space), inter_string)
         return move_line
 
-    """
-    def compose_inter_string(self, move_rec, right_space):
-
-        "TODO: Split this on two methods depending on whether or not we carry on the line"
-
-        inter_string = ""
-        current_line = self.lines[self.current_move["line"]]
-
-        carry_to_next_line = ((right_space < len(current_line)) and (current_line[0] != ' '))
-
-        print("CURRENT LINE", current_line)
-
-        #1
-        if (self.current_move["order"] == "b") and carry_to_next_line:
-            inter_string += "..."
-
-        #left_space, right_space = self.get_left_and_right_space_around_char_num(line_num, char_num)
-
-        #2, 2.1
-        #if (right_space < len(current_line)) and (current_line[0] != ' '):
-        if carry_to_next_line:
-            #print(self.space_counter_in_line(self.current_move["line"]))
-            inter_string += "\n" + " " * (self.space_counter_in_line(self.current_move["line"]) + self.tab_len)
-            move_line = self.current_move["line"] + 1
-        else:
-            move_line = self.current_move["line"]
-
-        #3
-        if carry_to_next_line:
-            inter_string += str(self.current_move["move"]) + ')'
-        else:
-            if self.current_move["order"] == "w":
-                inter_string += (" " + str(self.current_move["move"]) + ')')
-            else:
-                inter_string += " "
-
-        #4
-        if (self.current_move["order"] == "b") and carry_to_next_line:
-            inter_string += "..."
-
-        #5
-        inter_string += move_rec #+ ' '
-
-        #6
-        #if (right_space < len(current_line)) or (current_line[0] != ' '):
-        if carry_to_next_line:
-            inter_string += "\n" + " " * (self.space_counter_in_line(self.current_move["line"]))
-
-        print("INTER_STRING", inter_string)
-        # NEED TO INSERT INTER_STRING
-        self.insert("{}.{}".format(self.current_move["line"], right_space), inter_string)
-
-        return move_line
-    """
-
     def highlight_move(self, line_num: int, char_num: int) -> None:
 
         if char_num >= len(self.lines[line_num]):
@@ -318,24 +269,6 @@ class gameNotionField(scrolledtext.ScrolledText):
         current_line = self.lines[line_num]
         if len(current_line) == 0:
             return
-
-        """
-        if current_line[char_num] == ' ':
-            left_space = char_num - 1
-        else:
-            left_space = char_num
-
-        while current_line[left_space] != ' ':
-            left_space -= 1
-            if left_space == -1:
-                break
-
-        right_space = char_num
-        while current_line[right_space] != ' ':
-            right_space += 1
-            if right_space == len(current_line):
-                break
-        """
 
         left_space, right_space = self.get_left_and_right_space_around_char_num(line_num, char_num)
 

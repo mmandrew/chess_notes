@@ -10,7 +10,9 @@ import Consts
 import BoardSetup
 import math
 import Move
+import Fen
 import gameNotionField
+import ast
 
 class chessCanvas(tk.Tk):
     def __init__(self): #, window: Tk):
@@ -111,11 +113,6 @@ class chessCanvas(tk.Tk):
 
     def move_piece_img(self, start_rank, start_line, end_rank, end_line):
 
-        #start_rank = self.start_rank
-        #start_line = self.start_line
-        #end_rank = self.end_rank
-        #end_line = self.end_line
-
         start_square = self.board.board[start_rank][start_line]
         end_square = self.board.board[end_rank][end_line]
 
@@ -186,7 +183,6 @@ class chessCanvas(tk.Tk):
             self.board, comment, move_note = Move.Move.do_move(start_square, end_square, self.board)
             print(move_note)
             self.pgn_text.record_a_move(move_note, self.board.board_to_fen())
-            #print(self.board.board_to_fen())
 
             self.move_piece_img(self.start_rank, self.start_line, self.end_rank, self.end_line)
             self.process_comment_from_move(comment)
@@ -315,22 +311,46 @@ class chessCanvas(tk.Tk):
     def file_to_chess_tree(self, some_obj):
         return some_obj
 
-    def save_chess_tree(self):
+    def save_chess_tree(self, event):
         path = filedialog.asksaveasfilename(initialfile= "Untitled", defaultextension='.txt', filetypes=(("Text files", "*.txt"), ("All files", "*.*")))
         if path:
-            text_to_save = self.chess_tree_to_file(self.pgn_text.get(1.0, END))
-            lines = text_to_save.split('\n')
+            lines_to_save = self.pgn_text.lines
+            fens_to_save = self.pgn_text.lines_and_fens
             with open(path, 'w+') as f:
-                for line in lines:
+                for line in lines_to_save:
                     f.write(line + '\n')
+                f.write("LINES AND FENES\n")
+                for line in fens_to_save:
+                    f.write(str(line) + '\n')
+        return "break"
 
     def load_chess_tree(self):
         path = filedialog.askopenfile(filetypes=(("Text files", "*.txt"), ("All files", "*.*")))
         if path:
             print(path.name)
             with open(path.name, 'r') as f:
-                lines = path.readlines()
-                print(lines)
+                lines = [line[:-1] for line in path.readlines()]
+                fens_border = lines.index("LINES AND FENES")
+                self.pgn_text.lines = lines[:fens_border]
+                self.pgn_text.lines_and_fens = []
+                for line in lines[fens_border+1:]:
+                    self.pgn_text.lines_and_fens.append(ast.literal_eval(line))
+                print("FENS")
+                print(self.pgn_text.lines_and_fens)
+                self.pgn_text.update_text_by_lines()
+
+                fen_to_set = Fen.Fen(self.pgn_text.lines_and_fens[0][0]["fen"])
+                board_to_set = fen_to_set.fen_to_board()
+
+                self.start_board = board_to_set.copy_self()
+                #self.board = board_to_set.copy_self()
+
+                self.pgn_text.set_start_board(self.start_board)
+
+                self.full_board_clear()
+                self.board = board_to_set.copy_self()
+                self.draw_pieces()
+            print(lines)
         else:
             print("No file")
 
