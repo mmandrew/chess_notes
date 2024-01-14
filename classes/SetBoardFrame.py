@@ -43,7 +43,7 @@ class set_board_frame(tk.Frame):
         self.canvas.bind('<ButtonRelease>', self.released)
 
         self.board_img = ImageTk.PhotoImage(Image.open("../assets/board_image_1.png"))
-        self.canvas.create_image(300, 305, anchor = 'center', image = self.board_img)
+        self.board_id = self.canvas.create_image(300, 305, anchor = 'center', image = self.board_img)
 
         for i, piece in enumerate(Consts.piece_shorts):
             piece_img = ImageTk.PhotoImage(Image.open("../assets/{}_{}.png".format(piece, 'w')))
@@ -69,6 +69,11 @@ class set_board_frame(tk.Frame):
         self.trash_button.grid(row = 8, column = 6)
 
         self.draw_board()
+
+    def change_board_image(self, img_path):
+        self.canvas.delete(self.board_id)
+        self.board_img = ImageTk.PhotoImage(Image.open(img_path))
+        self.board_id = self.canvas.create_image(300, 305, anchor = 'center', image = self.board_img)
 
     def piece_button(self, j, color):
         if (j == -1) and color == "cursor":
@@ -100,6 +105,9 @@ class set_board_frame(tk.Frame):
         if not self.board_reverted:
             x_center = self.left_pad + half_square + sqaure_side * line
             y_center = self.top_pad + half_square + sqaure_side * (7 - rank)
+        else:
+            x_center = self.left_pad + half_square + sqaure_side * (7 - line)   #?
+            y_center = self.top_pad + half_square + sqaure_side  * rank               #?
 
         return x_center, y_center
 
@@ -112,6 +120,8 @@ class set_board_frame(tk.Frame):
         y_axis = math.floor((y - self.top_pad) / square_size)
         if not self.board_reverted:
             return 7 - y_axis, x_axis #line, rank
+        else:
+            return y_axis, 7 - x_axis  #?
 
     def get_piece_by_current_active_piece(self):
         if self.active_piece_button in self.white_pieces_btns:
@@ -125,14 +135,17 @@ class set_board_frame(tk.Frame):
         return piece, color
 
     def set_square_ep(self, event):
+        ep_value = self.top.ep_text.get(1.0, END)
         x_center, y_center = self.get_square_center(event.x, event.y)
         line, rank = self.get_square_axises(x_center, y_center)
         considered_square = self.board.board[line][rank]
+
         self.top.ep_text.config(state = NORMAL)
         self.top.ep_text.delete(1.0, END)
-        self.top.ep_text.insert(1.0, "{}{}".format(considered_square.line, considered_square.rank))
+        if not ((ep_value[0] == considered_square.line) and (ep_value[1] == str(considered_square.rank))):
+            self.top.ep_text.insert(1.0, "{}{}".format(considered_square.line, considered_square.rank))
         self.top.ep_text.config(state = DISABLED)
-        pass
+
 
     def board_pressed(self, event):
         if not (self.top_pad < event.y < self.bottom_pad) or not (self.left_pad < event.x < self.right_pad):
@@ -247,6 +260,29 @@ class set_board_frame(tk.Frame):
         for rank in self.board.board:
             for square in rank:
                 self.draw_piece_on_square(square)
+
+    def reverse_all_piece_images(self):
+        for rank in self.board.board:
+            for square in rank:
+                self.reverse_piece_image(square)
+
+    def reverse_piece_image(self, square: Square):
+        if not square.piece_stands():
+            return
+
+        #delete old image
+        piece_img = square.piece_img
+        self.canvas.delete(square.canvas_id)
+
+        #get axises by square line and rank
+        line = ord(square.line) - ord('a')
+        print("RANK", square.rank)
+        rank = square.rank - 1
+        x_center, y_center = self.get_square_center_by_line_rank(line, rank)
+
+        #create new on new axises
+        square.canvas_id = self.canvas.create_image(x_center, y_center, anchor = 'center', image = piece_img)
+        square.piece_img = piece_img
 
 
 if __name__ == "__main__":

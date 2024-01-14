@@ -13,7 +13,7 @@ import SetBoardFrame
 import Fen
 
 class gameNotionField(scrolledtext.ScrolledText):
-    def __init__(self, start_board: Board.Board(), *args, **kwargs):
+    def __init__(self, start_board: Board.Board, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.tab_len = 4
@@ -21,14 +21,20 @@ class gameNotionField(scrolledtext.ScrolledText):
         self.start_board: Board.Board() = start_board.copy_self()
 
         #self.current_move = [0, 1, 'w'] #(line, move, order). line and move start from 1 !!!
-        self.current_move = {"line": 0, "move": 1, "order": 'w'}
-        self.lines = ["START"]
-        self.lines_and_fens = [[{"move": "START", "fen": self.start_board.board_to_fen()}], []]
+        print(start_board.move_order)
+        print(self.start_board.move_order)
+        self.clear()
 
         self.bind("<Button-3>", self.test_record_a_move)
         #self.bind("<Button-1>", self.go_to_move)
         self.bind("<Key>", self.remember_text)
         self.bind("<<Modified>>", self.remember_text)
+
+    def clear(self):
+        self.delete(1.0, END)
+        self.current_move = {"line": int(self.start_board.move_order == 'b'), "move": 1, "order": self.start_board.move_order}
+        self.lines = ["START"]
+        self.lines_and_fens = [[{"move": "START", "fen": self.start_board.board_to_fen()}], []]
 
     def space_counter_in_line(self, index):
         space_counter = 0
@@ -40,6 +46,14 @@ class gameNotionField(scrolledtext.ScrolledText):
     def set_start_board(self, start_board: Board.Board):
         self.start_board = start_board.copy_self()
         self.lines_and_fens[0][0]["fen"] = self.start_board.board_to_fen()
+        self.current_move["order"] = self.start_board.move_order
+        if self.current_move["order"] == "b":
+            print("BLACK TO MOVE")
+            self.current_move["line"] = 1
+            self.insert(1.0, "1)...")
+            self.lines.append("1)...")
+        else:
+            print("WHITE TO MOVE")
 
     def update_moves_lines(self):
         text = self.get(1.0, END)
@@ -154,6 +168,7 @@ class gameNotionField(scrolledtext.ScrolledText):
                 prev_move_rec = line[index + 1:left_space]
             else:
                 prev_move_rec = line[index:left_space]
+            print("PREMOVE SHIT ", line, index, left_space, prev_move_rec, prev_move_rec[:prev_move_rec.find(')')])
             self.current_move["move"] = int(prev_move_rec[:prev_move_rec.find(')')]) + 1
 
     def get_left_and_right_space_around_char_num(self, line_num, char_num):
@@ -178,6 +193,7 @@ class gameNotionField(scrolledtext.ScrolledText):
 
     def get_right_space_by_current_move(self): #basically it is a right space of highlighted move
         current_line = self.lines[self.current_move["line"]]
+        print("CURRENT LINE ", current_line)
         if self.current_move["order"] == "b":
             current_move = self.current_move["move"]
         else:
@@ -303,8 +319,13 @@ class gameNotionField(scrolledtext.ScrolledText):
         #fen_to_set.fen_to_board().print_position_as_text_from_white()
 
     def current_move_is_main(self):
+        print(self.current_move["order"] == 'b')
+        print(len(self.lines) - 1 == self.current_move["line"])
+        print(' ' not in self.lines[self.current_move["line"]])
+        print((self.current_move["line"] == 1) or (' ' not in self.lines[self.current_move["line"]]))
+        #print(len(self.lines), self.current_move["line"])
         return ((self.current_move["order"] == 'w') and (len(self.lines) == self.current_move["line"] + 1)) or \
-            ((self.current_move["order"] == 'b') and (len(self.lines) - 1 == self.current_move["line"]) and (' ' not in self.lines[self.current_move["line"]]))
+            ((self.current_move["order"] == 'b') and (len(self.lines) - 1 == self.current_move["line"]) and ((self.current_move["line"] == 1) or (' ' not in self.lines[self.current_move["line"]])))
 
     def record_a_move(self, move_note, fen_after_move):
 

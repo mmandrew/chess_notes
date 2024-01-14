@@ -27,8 +27,9 @@ class board_set(tk.Toplevel):
         self.start_position_button = Button(self.basic_frame, text = "Set start position", width = 50)
         self.start_position_button.bind('<Button-1>', self.set_start_position)
         self.start_position_button.pack(side = TOP, pady = 100)
-        self.flip_board_buttom = Button(self.basic_frame, text = "Flip board", width = 50)
-        self.flip_board_buttom.pack(side = TOP, pady = 100)
+        self.flip_board_button = Button(self.basic_frame, text = "Flip board", width = 50)
+        self.flip_board_button.bind('<Button-1>', self.flip_canvas)
+        self.flip_board_button.pack(side = TOP, pady = 100)
         self.apply_button = Button(self.basic_frame, text = "APPLY", width = 50)
         self.apply_button.bind('<Button-1>', self.apply)
         self.apply_button.pack()
@@ -73,6 +74,8 @@ class board_set(tk.Toplevel):
         self.move_label = Label(self.position_details_frame, text = "Move")
         self.move_label.grid(row = 4, column = 0)
 
+        self.board_reverted = False
+
         self.white_move_button = Radiobutton(self.position_details_frame, text = "White", value = "w", variable = self.move_order)
         self.white_move_button.grid(row = 5, column = 0)
         self.white_move_button.select()
@@ -81,6 +84,23 @@ class board_set(tk.Toplevel):
         self.bring_castles()
         self.bring_ep_square()
         self.bring_move_order()
+
+    def flip_canvas(self, event):
+        self.flip_board()
+        self.flip_pieces()
+
+    def flip_board(self):
+        if not self.board_reverted:
+            self.board_and_pieces_frame.change_board_image("../assets/board_revert.png")
+            self.board_and_pieces_frame.board_reverted = True
+            self.board_reverted = True
+        else:
+            self.board_and_pieces_frame.change_board_image("../assets/board_image_1.png")
+            self.board_and_pieces_frame.board_reverted = False
+            self.board_reverted = False
+
+    def flip_pieces(self):
+        self.board_and_pieces_frame.reverse_all_piece_images()
 
     def bring_castles(self):
         if self.board.castles.white_kingside_castle_possible:
@@ -124,6 +144,7 @@ class board_set(tk.Toplevel):
         self.window.board.castles.print_castles()
         self.window.full_board_clear()
         self.window.board = self.board_and_pieces_frame.board
+        self.window.clear_pgn()
 
         if self.white_king_castle_check_state.get():
             self.window.board.castles.set_white_kingside_castle_possible()
@@ -145,7 +166,10 @@ class board_set(tk.Toplevel):
         else:
             self.window.board.castles.set_black_queenside_castle_impossible()
 
+        ep = self.ep_text.get("1.0", END)[:-1] or ''
         self.window.board.ep_square = self.ep_text.get("1.0", END)[:-1] or ''
+        if ep:
+            self.window.board.set_ep_square(ep)
         self.window.board.move_order = self.move_order.get()
         self.window.board.castles.print_castles()
 

@@ -182,6 +182,7 @@ class chessCanvas(tk.Tk):
         if Move.Move.check_move_legal(start_square, end_square, self.board):
             self.board, comment, move_note = Move.Move.do_move(start_square, end_square, self.board)
             print(move_note)
+            print(self.pgn_text.current_move)
             self.pgn_text.record_a_move(move_note, self.board.board_to_fen())
 
             self.move_piece_img(self.start_rank, self.start_line, self.end_rank, self.end_line)
@@ -191,9 +192,12 @@ class chessCanvas(tk.Tk):
             self.start_line = self.end_line = self.start_rank = self.end_rank = -1
         print(self.board.king_in_mate())
 
+    """
     def actualize(self):
         self.draw_pieces()
+    """
 
+    """
     def actualize_board_look_to(self, board: Board.Board):
         for rank in range(8):
             for line in range(8):
@@ -223,8 +227,9 @@ class chessCanvas(tk.Tk):
                 current_square.piece_img = img_to_put
                 target_square.print_square()
                 current_square.print_square()
+    """
 
-
+    """
     def actualize_board_look(self):
         for rank in range(8):
             for line in range(8):
@@ -246,14 +251,13 @@ class chessCanvas(tk.Tk):
 
                 square.canvas_id = self.canvas.create_image(x_center, y_center, anchor="center", image=img_to_put)
                 square.piece_img = img_to_put
+    """
 
     def open_setup_window(self):
         setup_window = BoardSetup.board_set(self, self.board)
         self.wait_window(setup_window)
         self.start_board = self.board.copy_self()
         self.pgn_text.set_start_board(self.start_board)
-        #print("BOARD", self.board.board_to_fen())
-        #print("START_BOARD", self.start_board.board_to_fen())
 
     def calc_square_size(self):
         return (self.bottom_pad - self.top_pad) / 8
@@ -299,9 +303,13 @@ class chessCanvas(tk.Tk):
                 square.clear()
                 self.clear_canvas_square(square)
 
+    def clear_pgn(self):
+        self.pgn_text.clear()
+
     def create_new_setup(self, event):
         self.open_setup_window()
         self.draw_pieces()
+        print(self.board.ep_square)
         return "break"
         #bind applying to apply button
 

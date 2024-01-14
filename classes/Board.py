@@ -234,6 +234,17 @@ class Board:
                 square.print_square()
             print()
 
+    def full_print(self, hello_string=""):
+        print(hello_string)
+        print("BOARD")
+        for rank in reversed(self.board):
+            for square in rank:
+                square.print_square()
+            print()
+        print("EP SQUARE", self.ep_square)
+        print("MOVE ORDER", self.move_order)
+
+
     def clear_board(self):
         for rank in self.board:
             for square in rank:
