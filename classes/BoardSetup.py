@@ -85,6 +85,10 @@ class board_set(tk.Toplevel):
         self.bring_ep_square()
         self.bring_move_order()
 
+        if self.window.board_reverted:
+            self.flip_board()
+            self.flip_pieces()
+
     def flip_canvas(self, event):
         self.flip_board()
         self.flip_pieces()

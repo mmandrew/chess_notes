@@ -49,7 +49,6 @@ class chessCanvas(tk.Tk):
             piece_img = ImageTk.PhotoImage(Image.open("../assets/{}_{}.png".format(piece, 'b')))
             self.black_pieces_images.append(piece_img)
 
-
         self.moves_frame = Frame(self, width=600)
         self.moves_frame.pack(side = LEFT)
 
@@ -79,23 +78,67 @@ class chessCanvas(tk.Tk):
         self.canvas.pack()
 
         self.board_img = ImageTk.PhotoImage(Image.open("../assets/board_image_1.png"))
-        self.canvas.create_image(300, 305, anchor = "center", image = self.board_img)
+        self.board_id = self.canvas.create_image(300, 305, anchor = "center", image = self.board_img)
 
         self.full_back_image = ImageTk.PhotoImage(Image.open("../assets/full_back.png"))
-        self.full_back_button = Button(self.board_frame, width = 150, height= 50, image = self.full_back_image)
+        self.full_back_button = Button(self.board_frame, width = 129, height= 50, image = self.full_back_image)
         self.full_back_button.pack(side = LEFT)
 
         self.back_image = ImageTk.PhotoImage(Image.open("../assets/back.png"))
-        self.back_button = Button(self.board_frame, width = 150, height= 50, image = self.back_image)
+        self.back_button = Button(self.board_frame, width = 129, height= 50, image = self.back_image)
         self.back_button.pack(side = LEFT)
 
+        self.flip_board_image = ImageTk.PhotoImage(Image.open("../assets/flip_board_arrow.png"))
+        self.flip_board_button = Button(self.board_frame, width = 60, heigh = 50, image = self.flip_board_image)
+        self.flip_board_button.bind('<Button-1>', self.flip_board_and_pieces)
+        self.flip_board_button.pack(side = LEFT)
+
         self.move_image = ImageTk.PhotoImage(Image.open("../assets/move.png"))
-        self.move_button = Button(self.board_frame, width = 150, height= 50, image = self.move_image)
+        self.move_button = Button(self.board_frame, width = 129, height= 50, image = self.move_image)
         self.move_button.pack(side = LEFT)
 
         self.full_move_image = ImageTk.PhotoImage(Image.open("../assets/full_move.png"))
-        self.full_move_button = Button(self.board_frame, width = 150, height= 50, image = self.full_move_image)
+        self.full_move_button = Button(self.board_frame, width = 129, height= 50, image = self.full_move_image)
         self.full_move_button.pack(side = LEFT)
+
+    def flip_board_and_pieces(self, event):
+        self.flip_board()
+        self.reverse_all_pieces()
+
+    def change_board_image(self, img_path):
+        self.canvas.delete(self.board_id)
+        self.board_img = ImageTk.PhotoImage(Image.open(img_path))
+        self.board_id = self.canvas.create_image(300, 305, anchor = 'center', image = self.board_img)
+
+    def flip_board(self):
+        if not self.board_reverted:
+            self.change_board_image("../assets/board_revert.png")
+            self.board_reverted = True
+        else:
+            self.change_board_image("../assets/board_image_1.png")
+            self.board_reverted = False
+
+    def reverse_all_pieces(self):
+        for rank in self.board.board:
+            for square in rank:
+                self.reverse_piece_image(square)
+
+    def reverse_piece_image(self, square: Square):
+        if not square.piece_stands():
+            return
+
+        #delete old image
+        piece_img = square.piece_img
+        self.canvas.delete(square.canvas_id)
+
+        #get axises by square line and rank
+        line = ord(square.line) - ord('a')
+        rank = square.rank - 1
+        x_center, y_center = self.get_square_center_by_line_rank(line, rank)
+
+        #create new on new axises
+        square.canvas_id = self.canvas.create_image(x_center, y_center, anchor = 'center', image = piece_img)
+        square.piece_img = piece_img
 
     def get_square_center(self, x, y):
         half_square = (self.bottom_pad - self.top_pad) / 16
@@ -110,6 +153,8 @@ class chessCanvas(tk.Tk):
         y_axis = math.floor((y - self.top_pad) / square_size)
         if not self.board_reverted:
             return x_axis, 7 - y_axis #line, rank
+        else:
+            return 7 - x_axis, y_axis #?
 
     def move_piece_img(self, start_rank, start_line, end_rank, end_line):
 
@@ -259,6 +304,8 @@ class chessCanvas(tk.Tk):
         self.start_board = self.board.copy_self()
         self.pgn_text.set_start_board(self.start_board)
 
+        return setup_window.board_reverted
+
     def calc_square_size(self):
         return (self.bottom_pad - self.top_pad) / 8
 
@@ -268,6 +315,9 @@ class chessCanvas(tk.Tk):
         if not self.board_reverted:
             x_center = self.left_pad + half_square + sqaure_side * line
             y_center = self.top_pad + half_square + sqaure_side * (7 - rank)
+        else:
+            x_center = self.left_pad + half_square + sqaure_side * (7 - line)
+            y_center = self.top_pad + half_square + sqaure_side * rank
 
         return x_center, y_center
 
@@ -307,17 +357,19 @@ class chessCanvas(tk.Tk):
         self.pgn_text.clear()
 
     def create_new_setup(self, event):
-        self.open_setup_window()
+        board_reverted = self.open_setup_window()
         self.draw_pieces()
-        print(self.board.ep_square)
+        if board_reverted and not self.board_reverted:
+            self.change_board_image("../assets/board_revert.png")
+            self.board_reverted = True
+            self.reverse_all_pieces()
+
+        if (not board_reverted and self.board_reverted):
+            self.change_board_image("../assets/board_image_1.png")
+            self.board_reverted = False
+            self.reverse_all_pieces()
+
         return "break"
-        #bind applying to apply button
-
-    def chess_tree_to_file(self, some_obj):
-        return some_obj
-
-    def file_to_chess_tree(self, some_obj):
-        return some_obj
 
     def save_chess_tree(self, event):
         path = filedialog.asksaveasfilename(initialfile= "Untitled", defaultextension='.txt', filetypes=(("Text files", "*.txt"), ("All files", "*.*")))
@@ -365,9 +417,7 @@ class chessCanvas(tk.Tk):
     def full_back(self):
         pass
 
-    #def set_canvas_board(self, board: Board.Board) -> None:
-    #    self.board = board
-
+    """
     def draw_piece_on_board(self, piece_short: chr, square: Square) -> None:
         self.canvas.pack()
         png_path = os.path.join(os.getcwd(), "..\\assets\{}_{}.png".format(square.piece.name, square.piece.color))
@@ -378,12 +428,15 @@ class chessCanvas(tk.Tk):
         x_axis = (self.canvas.winfo_width()) * (1 + 2 * (square.rank - 1)) // 16
         y_axis = (self.canvas.winfo_height()) * (1 + 2 * (ord(square.line) - ord('a'))) // 16
         q = self.canvas.create_image(x_axis, y_axis, anchor = "center", image = img)
+    """
 
+    """
     def draw_empty_board(self):
         self.canvas.pack()
         img = ImageTk.PhotoImage(Image.open("../assets/board_image_1.png"))
         b = self.canvas.create_image(300, 305, anchor = "center", image = img)
         self.mainloop()
+    """
 
     def draw_board(self, board):
         for rank in self.board.board:

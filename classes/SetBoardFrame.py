@@ -121,7 +121,7 @@ class set_board_frame(tk.Frame):
         if not self.board_reverted:
             return 7 - y_axis, x_axis #line, rank
         else:
-            return y_axis, 7 - x_axis  #?
+            return y_axis, 7 - x_axis  #seems working
 
     def get_piece_by_current_active_piece(self):
         if self.active_piece_button in self.white_pieces_btns:
@@ -276,7 +276,6 @@ class set_board_frame(tk.Frame):
 
         #get axises by square line and rank
         line = ord(square.line) - ord('a')
-        print("RANK", square.rank)
         rank = square.rank - 1
         x_center, y_center = self.get_square_center_by_line_rank(line, rank)
 
